@@ -56,45 +56,48 @@ function Dashboard() {
   }
 
   return (
-    <div className="dashboard">
-      <h1>Welcome, {user.username}!</h1>
+    <div className="dashboard flex flex-col md:flex-row gap-4 p-4">
+      <div className="md:w-2/3">
+        <section className="recent-posts bg-white shadow-md rounded-lg p-4">
+          <h2 className="text-lg font-semibold mb-4">Recent Forum Posts</h2>
+          {recentPosts.length > 0 ? (
+            <ul>
+              {recentPosts.map(post => (
+                <li key={post.id} className="mb-2">
+                  <Link to={`/forum/post/${post.id}`} className="text-orange-500">{post.title}</Link> by {post.author}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No recent posts.</p>
+          )}
+          <Link to="/forum" className="block text-orange-500 mt-4">View All Posts</Link>
+        </section>
+      </div>
       
-      <section className="user-stats">
-        <h2>Your Activity</h2>
-        {userStats ? (
-          <div>
-            <p>Posts: {userStats.postsCount}</p>
-            <p>Comments: {userStats.commentsCount}</p>
-            <ScoreTracker score={userStats.score} />
-          </div>
-        ) : (
-          <p>Loading user stats...</p>
-        )}
-      </section>
+      <div className="md:w-1/3">
+        <section className="user-stats bg-white shadow-md rounded-lg p-4 mb-4">
+          <h2 className="text-lg font-semibold mb-2">Your Activity</h2>
+          {userStats ? (
+            <div>
+              <p>Posts: {userStats.postsCount}</p>
+              <p>Comments: {userStats.commentsCount}</p>
+              <ScoreTracker score={userStats.score} />
+            </div>
+          ) : (
+            <p>Loading user stats...</p>
+          )}
+        </section>
 
-      <section className="recent-posts">
-        <h2>Recent Forum Posts</h2>
-        {recentPosts.length > 0 ? (
-          <ul>
-            {recentPosts.map(post => (
-              <li key={post.id}>
-                <Link to={`/forum/post/${post.id}`}>{post.title}</Link> by {post.author}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No recent posts.</p>
-        )}
-        <Link to="/forum">View All Posts</Link>
-      </section>
-
-      <section className="quick-actions">
-        <h2>Quick Actions</h2>
-        <Link to="/forum/new">Create New Post</Link>
-        <Link to="/profile">View Profile</Link>
-      </section>
+        <section className="quick-actions bg-white shadow-md rounded-lg p-4">
+          <h2 className="text-lg font-semibold mb-2">Quick Actions</h2>
+          <Link to="/forum/new" className="block mb-2 text-orange-500">Create New Post</Link>
+          <Link to="/profile" className="block text-orange-500">View Profile</Link>
+        </section>
+      </div>
     </div>
   );
 }
 
 export default Dashboard;
+  
