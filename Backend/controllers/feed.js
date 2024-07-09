@@ -1,13 +1,15 @@
 const Post = require('../models/post');
-const User = require('../models/user');
 const Comment = require('../models/commet');
+const commet = require('../models/commet');
 
 // Get a post
 exports.getPost = async (req, res, next) => {
   const postId = req.params.postId;
-
+  let isLiked = false;
+  let isFollowed = false;
   try {
-    const post = await Post.findById(postId).populate('creator', '-password -likes').populate('comments');
+    const post = await Post.findById(postId).populate('creator', '-password -likes').populate('comments').lean();
+    
     if (!post) {
       const error = new Error('Post not found.');
       error.statusCode = 404;
@@ -16,8 +18,27 @@ exports.getPost = async (req, res, next) => {
     
     post.creator.progress.following = post.creator.progress.following.length;
     post.creator.progress.followers = post.creator.progress.followers.length;
+    
+    if (req.user && ! req.user.likes.include(postId) ){
+      isLiked = true;
+    }
 
-    res.status(200).json({ post });
+    if (req.user && ! req.user.progress.following.include(post.creator._id)){
+      isFollowed = true;
+    }
+    if (req.user){
+      post.comments = post.comments.map(comment => ({
+        ...comment,
+        isLikedByCurrentUser: comment.likedBy.some(user => user._id.toString() === currentUserId.toString())
+      }));
+    }
+    
+    post.comments = post.comments.map( comment => ({
+      ...comment,
+      likedBy: comment.likedBy.length
+    }));
+
+    res.status(200).json({ post,isLiked: isLiked ,isFollowed: isFollowed });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -34,7 +55,7 @@ exports.createPost = async (req, res, next) => {
     const post = new Post({
       content,
       mediaURL,
-      creator: req.userId,
+      creator: req.user._id,
     });
 
     const result = await post.save();
@@ -75,7 +96,7 @@ exports.editPost = async (req, res, next) => {
       throw error;
     }
 
-    if (post.creator.toString() !== req.userId) {
+    if (post.creator.toString() !== req.user._id) {
       const error = new Error('Not authorized!');
       error.statusCode = 403;
       throw error;
@@ -95,7 +116,7 @@ exports.editPost = async (req, res, next) => {
 };
 
 // Like a post
-exports.likePost = async (req, res, next) => {
+exports.toggleLike = async (req, res, next) => {
   const postId = req.params.postId;
 
   try {
@@ -105,10 +126,20 @@ exports.likePost = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-
-    post.likes += 1;
+    let message;
+    if (req.user.likes.include(postId)){
+      post.likes -= 1;
+      req.user.likes.pull(postId);
+      message = 'Post Unliked !';
+    }
+    else{
+      post.likes += 1;
+      req.user.likes.push(postId);
+      message = 'Post liked !';
+    }
+    const user = await user.save();
     const updatedPost = await post.save();
-    res.status(200).json({ message: 'Post liked!', post: updatedPost });
+    res.status(200).json({ message: message, post: updatedPost });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -149,7 +180,7 @@ exports.commentOnPost = async (req, res, next) => {
 };
 
 // Like a comment
-exports.likeComment = async (req, res, next) => {
+exports.toggleLikeComment = async (req, res, next) => {
     const commentId = req.params.commentId;
     const userId = req.userId;
   
@@ -162,12 +193,12 @@ exports.likeComment = async (req, res, next) => {
       }
   
       if (comment.likedBy.includes(userId)) {
-        const error = new Error('You have already liked this comment.');
-        error.statusCode = 400;
-        throw error;
+        comment.pull(userId);
+      }
+      else{
+        comment.likedBy.push(userId);
       }
   
-      comment.likedBy.push(userId);
       const updatedComment = await comment.save();
       res.status(200).json({ message: 'Comment liked!', likes: updatedComment.likedBy.length });
     } catch (err) {

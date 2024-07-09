@@ -16,8 +16,8 @@ router.get('/post/:postId', feedController.getPost);
 router.post('/post', isAuth, feedController.createPost);
 router.get('/user-posts/:userId', isAuth, feedController.getUserPosts);
 router.put('/post/:postId', isAuth, feedController.editPost);
-router.put('/like-post/:postId', isAuth, feedController.likePost); //add to user list
+router.put('/like-post/:postId', isAuth, feedController.toggleLike);
 router.post('/comment/:postId', isAuth, feedController.commentOnPost);
-router.put('/like-comment/:commentId', isAuth, feedController.likeComment);
+router.put('/like-comment/:commentId', isAuth, feedController.toggleLikeComment);
 
 module.exports = router;

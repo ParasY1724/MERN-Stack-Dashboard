@@ -60,25 +60,33 @@ exports.login = async (req, res, next) => {
   }
 };
 
+
+
 exports.getProfile = async (req, res, next) => {
   const username = req.params.username;
+  let isFollowed = false;
   try {
+    if (username === req.user.username){
+      res.status(200).json({user : req.user.select('-likes')});
+    }
     const user = await User.findOne({ username: username })
       .select('-password -likes')
       .lean();
-
+      
     if (!user) {
       const error = new Error('User not found.');
       error.statusCode = 404;
       throw error;
     }
 
-    if (user._id.toString() !== req.userId.toString()) {
-      user.progress.following = user.progress.following.length;
-      user.progress.followers = user.progress.followers.length;
+    if (req.user && req.user.progress.following.include(user._id)){
+      isFollowed = true;
     }
 
-    res.status(200).json(user);
+    user.progress.following = user.progress.following.length;
+    user.progress.followers = user.progress.followers.length;
+    
+    res.status(200).json({user : user,isFollowed:isFollowed});
 
   } catch (err) {
     if (!err.statusCode) {
@@ -93,12 +101,7 @@ exports.editProfile = async (req, res, next) => {
   const { email, name, about, profilePic, socialURL } = req.body;
 
   try {
-    const user = await User.findById(userId);
-    if (!user) {
-      const error = new Error('User not found.');
-      error.statusCode = 404;
-      throw error;
-    }
+    const user = req.user;
 
     user.email = email || user.email;
     user.name = name || user.name;
@@ -107,6 +110,7 @@ exports.editProfile = async (req, res, next) => {
     user.socialURL = socialURL || user.socialURL;
 
     const updatedUser = await user.save();
+  
     res.status(200).json({ message: 'User updated!', user: updatedUser });
   } catch (err) {
     if (!err.statusCode) {
@@ -117,11 +121,17 @@ exports.editProfile = async (req, res, next) => {
 };
 
 exports.toggleFollow = async (req, res, next) => {
-  const userId = req.userId;
+  const user = req.user;
   const { followId } = req.body;
 
   try {
-    const user = await User.findById(userId);
+
+    if (followId.toString() === req.user._id.toString()){
+      const error = new Error("can't follow own account");
+      error.status = 403;
+      throw error;
+    }
+
     const followUser = await User.findById(followId);
 
     if (!user || !followUser) {
@@ -134,10 +144,10 @@ exports.toggleFollow = async (req, res, next) => {
 
     if (isFollowing) {
       user.progress.following.pull(followId);
-      followUser.progress.followers.pull(userId);
+      followUser.progress.followers.pull(user._id);
     } else {
       user.progress.following.push(followId);
-      followUser.progress.followers.push(userId);
+      followUser.progress.followers.push(user._id);
     }
 
     await user.save();
