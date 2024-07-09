@@ -3,13 +3,12 @@ const Schema = mongoose.Schema;
 
 const postSchema = new Schema(
   {
-    title: {
-      type: String,
-      required: true
+    userId:{
+      type:Schema.Types.ObjectId,
+      ref: 'User',
     },
-    imageUrl: {
+    mediaURL: {
       type: String,
-      required: true
     },
     content: {
       type: String,
@@ -19,7 +18,17 @@ const postSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true
-    }
+    },
+    likes: {
+      type:Number,
+      default:0
+    },
+    comments:[
+      {
+        type:Schema.Types.ObjectId,
+        ref: 'Comment'
+      }
+    ]
   },
   { timestamps: true }
 );

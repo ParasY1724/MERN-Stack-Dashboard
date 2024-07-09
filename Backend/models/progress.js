@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const progressSchema = new Schema({
-  userId:{
-    type:Schema.Types.ObjectId,
-    ref: 'User',
-  },
   level:{
     type: String,
     default: 'Rookie'
@@ -20,10 +16,12 @@ const progressSchema = new Schema({
       ref: 'User',
     }
   ],
-  followers: {
-    type:Number,
-    default:0
-  }
+  followers: [
+    {
+      type:Schema.Types.ObjectId,
+      ref: 'User',
+    }
+  ]
 });
 
-module.exports = mongoose.model('Progress', progressSchema);
+module.exports = progressSchema;
