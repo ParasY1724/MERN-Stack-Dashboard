@@ -3,40 +3,26 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 exports.signup = async (req, res, next) => {
-  const email = req.body.email;
-  const name = req.body.name;
-  const username = req.body.username;
-  const password = req.body.password;
+  const { email, name, username, password } = req.body;
   try {
     const hashedPw = await bcrypt.hash(password, 12);
-    const user = new User({
-      email: email,
-      password: hashedPw,
-      name: name,
-      username: username
-    });
+    const user = new User({ email, password: hashedPw, name, username });
     const result = await user.save();
     res.status(201).json({ message: 'User created!', userId: result._id });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };
 
 exports.login = async (req, res, next) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  let loadedUser;
+  const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email });
     if (!user) {
       const error = new Error('A user with this email could not be found.');
       error.statusCode = 401;
       throw error;
     }
-    loadedUser = user;
     const isEqual = await bcrypt.compare(password, user.password);
     if (!isEqual) {
       const error = new Error('Wrong password!');
@@ -44,120 +30,81 @@ exports.login = async (req, res, next) => {
       throw error;
     }
     const token = jwt.sign(
-      {
-        email: loadedUser.email,
-        userId: loadedUser._id.toString()
-      },
+      { email: user.email, userId: user._id.toString() },
       'somesupersecretsecret',
       { expiresIn: '1h' }
     );
-    res.status(200).json({ token: token, userId: loadedUser._id.toString() });
+    res.status(200).json({ token, userId: user._id.toString() });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };
 
-
-
 exports.getProfile = async (req, res, next) => {
-  const username = req.params.username;
-  let isFollowed = false;
+  const { username } = req.params;
   try {
-    if (username === req.user.username){
-      res.status(200).json({user : req.user.select('-likes')});
+    if (username === req.user.username) {
+      return res.status(200).json({ user: req.user.select('-likes') });
     }
-    const user = await User.findOne({ username: username })
-      .select('-password -likes')
-      .lean();
-      
+    const user = await User.findOne({ username }).select('-password -likes').lean();
     if (!user) {
       const error = new Error('User not found.');
       error.statusCode = 404;
       throw error;
     }
-
-    if (req.user && req.user.progress.following.include(user._id)){
-      isFollowed = true;
-    }
-
+    const isFollowed = req.user && req.user.progress.following.includes(user._id);
     user.progress.following = user.progress.following.length;
     user.progress.followers = user.progress.followers.length;
-    
-    res.status(200).json({user : user,isFollowed:isFollowed});
-
+    res.status(200).json({ user, isFollowed });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };
 
 exports.editProfile = async (req, res, next) => {
-  const userId = req.userId;
   const { email, name, about, profilePic, socialURL } = req.body;
-
   try {
     const user = req.user;
-
-    user.email = email || user.email;
-    user.name = name || user.name;
-    user.about = about || user.about;
-    user.profilePic = profilePic || user.profilePic;
-    user.socialURL = socialURL || user.socialURL;
-
+    Object.assign(user, { email, name, about, profilePic, socialURL });
     const updatedUser = await user.save();
-  
     res.status(200).json({ message: 'User updated!', user: updatedUser });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };
 
 exports.toggleFollow = async (req, res, next) => {
-  const user = req.user;
   const { followId } = req.body;
-
   try {
-
-    if (followId.toString() === req.user._id.toString()){
-      const error = new Error("can't follow own account");
-      error.status = 403;
+    if (followId.toString() === req.user._id.toString()) {
+      const error = new Error("Can't follow own account");
+      error.statusCode = 403;
       throw error;
     }
-
-    const followUser = await User.findById(followId);
-
+    const [user, followUser] = await Promise.all([
+      User.findById(req.user._id),
+      User.findById(followId)
+    ]);
     if (!user || !followUser) {
       const error = new Error('User not found.');
       error.statusCode = 404;
       throw error;
     }
-
     const isFollowing = user.progress.following.includes(followId);
-
-    if (isFollowing) {
-      user.progress.following.pull(followId);
-      followUser.progress.followers.pull(user._id);
-    } else {
-      user.progress.following.push(followId);
-      followUser.progress.followers.push(user._id);
-    }
-
-    await user.save();
-    await followUser.save();
-
+    const updateOp = isFollowing ? '$pull' : '$push';
+    await Promise.all([
+      User.updateOne({ _id: user._id }, { [updateOp]: { 'progress.following': followId } }),
+      User.updateOne({ _id: followUser._id }, { [updateOp]: { 'progress.followers': user._id } })
+    ]);
     res.status(200).json({ message: 'Follow status updated!' });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };
+
+
+exports.getUser = (req,res,next) => {
+  if (req.user){
+    res.status(200).json({user:req.user});
+  }
+}

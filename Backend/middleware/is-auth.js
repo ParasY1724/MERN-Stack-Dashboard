@@ -1,33 +1,30 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-module.exports =  async (req, res, next) => {
-  const authHeader = req.get('Authorization');
-  if (!authHeader) {
-    const error = new Error('Not authenticated.');
-    error.statusCode = 401;
-    throw error;
-  }
-  const token = authHeader.split(' ')[1];
-  let decodedToken;
+module.exports = async (req, res, next) => {
   try {
-    decodedToken = jwt.verify(token, 'somesupersecretsecret');
+    const token = req.get('Authorization')?.split(' ')[1];
+    if (!token) {
+      const error = new Error('Not authenticated.');
+      error.statusCode = 401;
+      throw error;
+    }
+    const decodedToken = jwt.verify(token, 'somesupersecretsecret');
+    if (!decodedToken) {
+      const error = new Error('Not authenticated.');
+      error.statusCode = 401;
+      throw error;
+    }
+    const user = await User.findById(decodedToken.userId).select('-password');
+    if (!user) {
+      const error = new Error('User not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+    req.userId = decodedToken.userId;
+    req.user = user;
+    next();
   } catch (err) {
-    err.statusCode = 500;
-    throw err;
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
-  if (!decodedToken) {
-    const error = new Error('Not authenticated.');
-    error.statusCode = 401;
-    throw error;
-  }
-  req.userId = decodedToken.userId;
-  const user = await User.findById(decodedToken.userId).select('-password');
-  if (!user) {
-    const error = new Error('User not found.');
-    error.statusCode = 404;
-    throw error;
-  }
-  req.user = user;
-  next();
 };

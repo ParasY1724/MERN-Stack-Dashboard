@@ -3,9 +3,9 @@ const Schema = mongoose.Schema;
 
 const postSchema = new Schema(
   {
-    userId:{
-      type:Schema.Types.ObjectId,
-      ref: 'User',
+    title: {
+      type: String,
+      required: true
     },
     mediaURL: {
       type: String,

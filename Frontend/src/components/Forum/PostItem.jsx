@@ -9,6 +9,7 @@ function PostItem({ post }) {
 
   return (
     <div>
+      
       <h2>{post.title}</h2>
       <p>{post.content}</p>
       <p>By: {post.author} on {post.timestamp}</p>

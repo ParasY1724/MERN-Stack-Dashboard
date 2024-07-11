@@ -11,11 +11,7 @@ function ForumList() {
 
   return (
     <div>
-      <h1>Community Forum</h1>
       <CreatePost />
-      {posts.map(post => (
-        <PostItem key={post.id} post={post} />
-      ))}
     </div>
   );
 }

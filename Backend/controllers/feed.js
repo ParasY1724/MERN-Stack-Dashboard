@@ -1,14 +1,16 @@
 const Post = require('../models/post');
 const Comment = require('../models/commet');
-const commet = require('../models/commet');
 
-// Get a post
 exports.getPost = async (req, res, next) => {
-  const postId = req.params.postId;
-  let isLiked = false;
-  let isFollowed = false;
+  const { postId } = req.params;
   try {
-    const post = await Post.findById(postId).populate('creator', '-password -likes').populate('comments').lean();
+    const post = await Post.findById(postId)
+      .populate('creator', '-password -likes')
+      .populate({
+        path: 'comments',
+        options: { sort: { createdAt: -1 } }
+      })
+      .lean();
     
     if (!post) {
       const error = new Error('Post not found.');
@@ -16,109 +18,76 @@ exports.getPost = async (req, res, next) => {
       throw error;
     }
     
-    post.creator.progress.following = post.creator.progress.following.length;
-    post.creator.progress.followers = post.creator.progress.followers.length;
+    post.creator.progress = {
+      following: post.creator.progress.following.length,
+      followers: post.creator.progress.followers.length
+    };
     
-    if (req.user && ! req.user.likes.include(postId) ){
-      isLiked = true;
-    }
-
-    if (req.user && ! req.user.progress.following.include(post.creator._id)){
-      isFollowed = true;
-    }
-    if (req.user){
+    const isLiked = req.user && req.user.likes.includes(postId);
+    const isFollowed = req.user && req.user.progress.following.includes(post.creator._id);
+    
+    if (req.user) {
       post.comments = post.comments.map(comment => ({
         ...comment,
-        isLikedByCurrentUser: comment.likedBy.some(user => user._id.toString() === currentUserId.toString())
+        isLikedByCurrentUser: comment.likedBy.some(user => user._id.toString() === req.user._id.toString()),
+        likedBy: comment.likedBy.length
+      }));
+    } else {
+      post.comments = post.comments.map(comment => ({
+        ...comment,
+        likedBy: comment.likedBy.length
       }));
     }
-    
-    post.comments = post.comments.map( comment => ({
-      ...comment,
-      likedBy: comment.likedBy.length
-    }));
-
-    res.status(200).json({ post,isLiked: isLiked ,isFollowed: isFollowed });
+    res.status(200).json({ post, isLiked, isFollowed });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };
 
-// Create a post
 exports.createPost = async (req, res, next) => {
-  const { content, mediaURL } = req.body;
-
+  const { title , content, mediaURL } = req.body;
   try {
-    const post = new Post({
-      content,
-      mediaURL,
-      creator: req.user._id,
-    });
-
+    const post = new Post({ title,content, mediaURL, creator: req.user._id });
     const result = await post.save();
     res.status(201).json({ message: 'Post created!', post: result });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
+    console.log(err);
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };
 
-// Get user posts
 exports.getUserPosts = async (req, res, next) => {
-  const userId = req.params.userId;
-
+  const { userId } = req.params;
   try {
     const posts = await Post.find({ creator: userId });
     res.status(200).json({ posts });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };
 
-// Edit a post
 exports.editPost = async (req, res, next) => {
-  const postId = req.params.postId;
+  const { postId } = req.params;
   const { content, mediaURL } = req.body;
-
   try {
-    const post = await Post.findById(postId);
+    const post = await Post.findOneAndUpdate(
+      { _id: postId, creator: req.user._id },
+      { content, mediaURL },
+      { new: true }
+    );
     if (!post) {
-      const error = new Error('Post not found.');
+      const error = new Error('Post not found or not authorized.');
       error.statusCode = 404;
       throw error;
     }
-
-    if (post.creator.toString() !== req.user._id) {
-      const error = new Error('Not authorized!');
-      error.statusCode = 403;
-      throw error;
-    }
-
-    post.content = content;
-    post.mediaURL = mediaURL;
-
-    const updatedPost = await post.save();
-    res.status(200).json({ message: 'Post updated!', post: updatedPost });
+    res.status(200).json({ message: 'Post updated!', post });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };
 
-// Like a post
 exports.toggleLike = async (req, res, next) => {
-  const postId = req.params.postId;
-
+  const { postId } = req.params;
   try {
     const post = await Post.findById(postId);
     if (!post) {
@@ -126,33 +95,23 @@ exports.toggleLike = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    let message;
-    if (req.user.likes.include(postId)){
-      post.likes -= 1;
-      req.user.likes.pull(postId);
-      message = 'Post Unliked !';
-    }
-    else{
-      post.likes += 1;
-      req.user.likes.push(postId);
-      message = 'Post liked !';
-    }
-    const user = await user.save();
-    const updatedPost = await post.save();
-    res.status(200).json({ message: message, post: updatedPost });
+    const isLiked = req.user.likes.includes(postId);
+    const updateOp = isLiked ? '$pull' : '$push';
+    const likesDelta = isLiked ? -1 : 1;
+    
+    await Promise.all([
+      User.updateOne({ _id: req.user._id }, { [updateOp]: { likes: postId } }),
+      Post.updateOne({ _id: postId }, { $inc: { likes: likesDelta } })
+    ]);
+    res.status(200).json({ message: isLiked ? 'Post Unliked!' : 'Post Liked!', likes: post.likes + likesDelta });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };
 
-// Comment on a post
 exports.commentOnPost = async (req, res, next) => {
-  const postId = req.params.postId;
+  const { postId } = req.params;
   const { content } = req.body;
-
   try {
     const post = await Post.findById(postId);
     if (!post) {
@@ -160,51 +119,50 @@ exports.commentOnPost = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-
     const comment = new Comment({
-      content: content,
-      username: req.body.username,
-      profilePic: req.body.profilePic,
+      content,
+      username: req.user.username,
+      profilePic: req.user.profilePic,
     });
-
     post.comments.push(comment);
-    await comment.save();
-    const updatedPost = await post.save();
-    res.status(201).json({ message: 'Comment added!', post: updatedPost });
+    await Promise.all([comment.save(), post.save()]);
+    res.status(201).json({ message: 'Comment added!', comment });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };
 
-// Like a comment
 exports.toggleLikeComment = async (req, res, next) => {
-    const commentId = req.params.commentId;
-    const userId = req.userId;
-  
-    try {
-      const comment = await Comment.findById(commentId);
-      if (!comment) {
-        const error = new Error('Comment not found.');
-        error.statusCode = 404;
-        throw error;
-      }
-  
-      if (comment.likedBy.includes(userId)) {
-        comment.pull(userId);
-      }
-      else{
-        comment.likedBy.push(userId);
-      }
-  
-      const updatedComment = await comment.save();
-      res.status(200).json({ message: 'Comment liked!', likes: updatedComment.likedBy.length });
-    } catch (err) {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
+  const { commentId } = req.params;
+  try {
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      const error = new Error('Comment not found.');
+      error.statusCode = 404;
+      throw error;
     }
-  };
+    const isLiked = comment.likedBy.includes(req.user._id);
+    const updateOp = isLiked ? '$pull' : '$push';
+    await Comment.updateOne({ _id: commentId }, { [updateOp]: { likedBy: req.user._id } });
+    const updatedComment = await Comment.findById(commentId);
+    res.status(200).json({ message: 'Comment like toggled!', likes: updatedComment.likedBy.length });
+  } catch (err) {
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
+  }
+};
+
+exports.recentPost = async (req, res) => {
+  try {
+    const recentPosts = await Post.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate({
+        path: 'creator',
+        select: 'username'
+      });
+    res.json(recentPosts);
+  } 
+  catch (error) {
+    res.status(500).json({ message: 'Error fetching recent posts', error: error.message });
+  }
+}

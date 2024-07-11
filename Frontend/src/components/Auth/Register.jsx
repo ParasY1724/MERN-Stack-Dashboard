@@ -1,6 +1,9 @@
 import React, { useState, useContext } from 'react';
-// import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
+
+const URL = 'http://localhost:8080/';
+
 
 function Register() {
   const [username, setUsername] = useState('');
@@ -8,7 +11,7 @@ function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const { setUser } = useContext(AuthContext);
-//   const history = useHistory();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,27 +21,21 @@ function Register() {
     }
 
     try {
-      // Here you would typically make an API call to your backend
-      // For example:
-      // const response = await fetch('/api/register', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ username, email, password })
-      // });
-      // if (response.ok) {
-      //   const userData = await response.json();
-      //   setUser(userData);
-      //   history.push('/');
-      // } else {
-      //   throw new Error('Registration failed');
-      // }
+      const response = await fetch(URL+'auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
 
-      // For now, we'll just log the registration data
-      console.log('Registration data:', { username, email, password });
-      setUser({ username, email }); // This is just for demonstration
-    //   history.push('/');
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.userId);
+        navigate('/login');
+      } else {
+        throw new Error('Registration failed');
+      }
     } catch (error) {
       console.error('Error during registration:', error);
       alert('Registration failed. Please try again.');

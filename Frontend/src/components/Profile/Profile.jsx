@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
-import ScoreTracker from './ScoreTracker';
 
 function Profile() {
   const { user } = useContext(AuthContext);
@@ -10,14 +9,14 @@ function Profile() {
     // Fetch user profile data
     // This is a placeholder, replace with actual API call
     setProfile({
-      name: "John Doe",
-      username: "johndoe123",
-      about: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      profilePic: "path/to/profile-pic.jpg",
+      name: user.username,
+      username: user.username,
+      about: user.about,
+      profilePic: user.profilePic,
       badge: "path/to/badge-svg.svg",
-      currentLeague: "Gold",
-      totalLikes: 1500,
-      totalExp: 3000,
+      currentLeague: user.progress.level,
+      totalLikes: user.likes.length,
+      totalExp: user.progress.exp,
       topPost: {
         title: "My Best Post Ever",
         likes: 250,
@@ -90,7 +89,6 @@ function Profile() {
           </div>
         </div>
       </div>
-      <ScoreTracker score={profile.totalExp} />
     </div>
   );
 }

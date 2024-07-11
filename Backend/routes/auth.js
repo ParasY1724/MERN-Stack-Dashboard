@@ -9,5 +9,5 @@ router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 router.put('/edit-profile', isAuth, authController.editProfile);
 router.put('/toggle-follow', isAuth, authController.toggleFollow);
-
+router.get('/get-user',isAuth,authController.getUser);
 module.exports = router;

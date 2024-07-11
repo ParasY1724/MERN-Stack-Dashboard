@@ -12,6 +12,7 @@ function Navbar() {
 
   const handleLogout = () => {
     setUser(null);
+    localStorage.removeItem('token');
     setIsMenuOpen(false);
   };
 
@@ -95,7 +96,7 @@ function Navbar() {
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                   >
                     <span className="sr-only">Open user menu</span>
-                    <img className="w-8 h-8 sm:w-10 sm:h-10 rounded-full p-1 bg-white" src="/path-to-user-image.jpg" alt="user photo"/>
+                    <img className="w-8 h-8 sm:w-10 sm:h-10 rounded-full p-1 bg-white" src= {user.profilePic} alt="user photo"/>
                   </button>
                   {isMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md overflow-hidden shadow-xl z-10">

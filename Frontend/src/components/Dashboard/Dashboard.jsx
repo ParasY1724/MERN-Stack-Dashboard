@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
-import ScoreTracker from '../Profile/ScoreTracker';
+
+const API_URL = 'http://localhost:8080'; // Replace with your actual API URL
 
 function Dashboard() {
   const { user } = useContext(AuthContext);
@@ -16,36 +17,31 @@ function Dashboard() {
   }, [user]);
 
   const fetchUserData = async () => {
-    try {
-      // In a real application, you would make an API call here
-      // const response = await fetch(`/api/users/${user.id}/stats`);
-      // const data = await response.json();
-      // setUserStats(data);
-
-      // For now, we'll use mock data
-      setUserStats({
-        postsCount: 5,
-        commentsCount: 10,
-        score: 100,
-      });
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
+    // try {
+    //   const token = localStorage.getItem('token');
+    //   const response = await fetch(`${API_URL}/api/users/stats`, {
+    //     headers: {
+    //       'Authorization': `Bearer ${token}`
+    //     }
+    //   });
+    //   if (!response.ok) {
+    //     throw new Error('Failed to fetch user stats');
+    //   }
+    //   const data = await response.json();
+    //   setUserStats(data);
+    // } catch (error) {
+    //   console.error('Error fetching user data:', error);
+    // }
   };
 
   const fetchRecentPosts = async () => {
     try {
-      // In a real application, you would make an API call here
-      // const response = await fetch('/api/posts/recent');
-      // const data = await response.json();
-      // setRecentPosts(data);
-
-      // For now, we'll use mock data
-      setRecentPosts([
-        { id: 1, title: 'First post', author: 'User1' },
-        { id: 2, title: 'Second post', author: 'User2' },
-        { id: 3, title: 'Third post', author: 'User3' },
-      ]);
+      const response = await fetch(`${API_URL}/feed/posts/recent`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch recent posts');
+      }
+      const data = await response.json();
+      setRecentPosts(data);
     } catch (error) {
       console.error('Error fetching recent posts:', error);
     }
@@ -63,8 +59,8 @@ function Dashboard() {
           {recentPosts.length > 0 ? (
             <ul>
               {recentPosts.map(post => (
-                <li key={post.id} className="mb-2">
-                  <Link to={`/forum/post/${post.id}`} className="text-orange-500">{post.title}</Link> by {post.author}
+                <li key={post._id} className="mb-2">
+                  <Link to={`/forum/post/${post._id}`} className="text-orange-500">{post.title}</Link> by {post.creator.username}
                 </li>
               ))}
             </ul>
@@ -80,9 +76,8 @@ function Dashboard() {
           <h2 className="text-lg font-semibold mb-2">Your Activity</h2>
           {userStats ? (
             <div>
-              <p>Posts: {userStats.postsCount}</p>
-              <p>Comments: {userStats.commentsCount}</p>
-              <ScoreTracker score={userStats.score} />
+              <p>Posts: 0</p>
+              <p>Comments: 0</p>
             </div>
           ) : (
             <p>Loading user stats...</p>
@@ -100,4 +95,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-  

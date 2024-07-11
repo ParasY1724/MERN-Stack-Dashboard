@@ -13,6 +13,7 @@ const isAuth = require('../middleware/is-auth');
 const router = express.Router();
 
 router.get('/post/:postId', feedController.getPost);
+router.get('/posts/recent',feedController.recentPost)
 router.post('/post', isAuth, feedController.createPost);
 router.get('/user-posts/:userId', isAuth, feedController.getUserPosts);
 router.put('/post/:postId', isAuth, feedController.editPost);

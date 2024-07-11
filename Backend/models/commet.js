@@ -20,6 +20,8 @@ const commentSchema = new Schema({
       ref: 'User'
     }
   ]
-});
+},
+{ timestamps: true }
+);
 
 module.exports = mongoose.model('Comment', commentSchema);
