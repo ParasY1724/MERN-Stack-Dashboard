@@ -3,17 +3,50 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 exports.signup = async (req, res, next) => {
-  const { email, name, username, password } = req.body;
+  const { username, email, password, name, about, github, linkedin, instagram } = req.body;
+
   try {
-    const hashedPw = await bcrypt.hash(password, 12);
-    const user = new User({ email, password: hashedPw, name, username });
-    const result = await user.save();
-    res.status(201).json({ message: 'User created!', userId: result._id });
+
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
+      return res.status(400).json({ 
+        error: 'User already exists with this email or username' 
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    let profilePicUrl = 'https://i.pinimg.com/736x/55/33/5c/55335c708ac05d8f469894d08e2671fa.jpg';
+
+    if (req.file) {
+      profilePicUrl = req.file.path;
+    }
+
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+      name,
+      about,
+      profilePic: profilePicUrl,
+      socialURL: [github, linkedin, instagram].filter(Boolean)
+    });
+
+    // Save user to database
+    await newUser.save();
+
+    res.status(201).json({ 
+      message: 'User created successfully',
+      userId: newUser._id 
+    });
+
   } catch (err) {
-    next(err.statusCode ? err : { ...err, statusCode: 500 });
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   }
 };
-
 exports.login = async (req, res, next) => {
   const { email, password } = req.body;
   try {
@@ -43,16 +76,14 @@ exports.login = async (req, res, next) => {
 exports.getProfile = async (req, res, next) => {
   const { username } = req.params;
   try {
-    if (username === req.user.username) {
-      return res.status(200).json({ user: req.user.select('-likes') });
-    }
     const user = await User.findOne({ username }).select('-password -likes').lean();
     if (!user) {
       const error = new Error('User not found.');
       error.statusCode = 404;
       throw error;
     }
-    const isFollowed = req.user && req.user.progress.following.includes(user._id);
+
+    const isFollowed = req.user && req.user.progress.following.some(followingUser => followingUser._id.equals(user._id));
     user.progress.following = user.progress.following.length;
     user.progress.followers = user.progress.followers.length;
     res.status(200).json({ user, isFollowed });

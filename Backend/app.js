@@ -23,6 +23,14 @@ app.use(bodyParser.json());
 app.use('/auth', authRoutes);
 app.use('/feed', feedRoutes);
 
+app.use((error, req, res, next) => {
+  console.log(error);
+  const status = error.statusCode || 500;
+  const message = error.message;
+  const data = error.data;
+  res.status(status).json({ message: message, data: data });
+});
+
 mongoose
   .connect(process.env.MONOGODB_URL, {
     dbName: 'CodeForum_DB',

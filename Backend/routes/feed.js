@@ -12,13 +12,14 @@ const isAuth = require('../middleware/is-auth');
 
 const router = express.Router();
 
-router.get('/post/:postId', feedController.getPost);
-router.get('/posts/recent',feedController.recentPost)
-router.post('/post', isAuth, feedController.createPost);
-router.get('/user-posts/:userId', isAuth, feedController.getUserPosts);
+router.get('/post/:postId',isAuth, feedController.getPost); //done
+router.get('/posts',feedController.getPosts); //done
+router.get('/posts/:username',feedController.getPosts); //done
+router.get('/recent_post',feedController.recentPost);//done
+router.post('/post', isAuth, feedController.createPost);//done
 router.put('/post/:postId', isAuth, feedController.editPost);
-router.put('/like-post/:postId', isAuth, feedController.toggleLike);
-router.post('/comment/:postId', isAuth, feedController.commentOnPost);
-router.put('/like-comment/:commentId', isAuth, feedController.toggleLikeComment);
+router.put('/like-post/:postId', isAuth, feedController.toggleLike);//done
+router.post('/comment/:postId', isAuth, feedController.commentOnPost);//done
+router.put('/like-comment/:commentId', isAuth, feedController.toggleLikeComment);//done     
 
 module.exports = router;

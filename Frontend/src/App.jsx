@@ -7,9 +7,10 @@ import Dashboard from './components/Dashboard/Dashboard';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Profile from './components/Profile/Profile';
-// import ForumList from './components/Forum/ForumList';
 import CreatePost from './components/Forum/CreatePost';
 import PostDetail from './components/Forum/PostDetail'; // New component we'll create
+import ForumList from './components/Forum/ForumList';
+import FollowList from './components/Profile/FolllowList';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useContext(AuthContext);
@@ -31,13 +32,16 @@ function App() {
             <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+            <Route path="/profile/:username" element={<PrivateRoute><Profile /></PrivateRoute>} />
             <Route path="/forum" element={<PrivateRoute><CreatePost /></PrivateRoute>} />
+            <Route path="/posts" element={<PrivateRoute><ForumList /></PrivateRoute>} />
+            <Route path="/posts/:username" element={<PrivateRoute><ForumList /></PrivateRoute>} />
             <Route path="/forum/post/:postId" element={<PrivateRoute><PostDetail /></PrivateRoute>} />
+            {/* <Route path="/:type" element={<PrivateRoute><FollowList /></PrivateRoute>} />  */}
           </Routes>
         </div>
       </Router>
-    </AuthProvider>
+    </AuthProvider> 
   );
 }
 

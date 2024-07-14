@@ -4,29 +4,47 @@ import { AuthContext } from '../../contexts/AuthContext';
 
 const URL = 'http://localhost:8080/';
 
-
 function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [about, setAbout] = useState('');
+  const [github, setGithub] = useState('');
+  const [linkedin, setLinkedin] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [profilePic, setProfilePic] = useState(null);
+  const [error, setError] = useState('');
   const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
     if (password !== confirmPassword) {
-      alert("Passwords don't match");
+      setError("Passwords don't match");
       return;
     }
 
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('name', name);
+    formData.append('about', about);
+    formData.append('github', github);
+    formData.append('linkedin', linkedin);
+    formData.append('instagram', instagram);
+    if (profilePic) {
+      formData.append('profilePic', profilePic);
+    }
+
     try {
-      const response = await fetch(URL+'auth/signup', {
+      const response = await fetch(URL + 'auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, email, password }),
+        body: formData,
       });
 
       if (response.ok) {
@@ -38,55 +56,113 @@ function Register() {
       }
     } catch (error) {
       console.error('Error during registration:', error);
-      alert('Registration failed. Please try again.');
+      setError('Registration failed. Please try again.');
     }
   };
 
+  const handleFileChange = (e) => {
+    setProfilePic(e.target.files[0]);
+  };
+
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Register</h2>
-      <div>
-        <label htmlFor="username">Username:</label>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 py-8">
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">Create Account</h2>
+        
         <input
           type="text"
-          id="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          placeholder="Username"
           required
+          className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-      </div>
-      <div>
-        <label htmlFor="email">Email:</label>
+        
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Full Name"
+          required
+          className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        
         <input
           type="email"
-          id="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
           required
+          className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-      </div>
-      <div>
-        <label htmlFor="password">Password:</label>
+        
         <input
           type="password"
-          id="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
           required
+          className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-      </div>
-      <div>
-        <label htmlFor="confirmPassword">Confirm Password:</label>
+        
         <input
           type="password"
-          id="confirmPassword"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Confirm Password"
           required
+          className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-      </div>
-      <button type="submit">Register</button>
-    </form>
+        
+        <textarea
+          value={about}
+          onChange={(e) => setAbout(e.target.value)}
+          placeholder="About you"
+          rows="3"
+          className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+        />
+        
+        <input
+          type="url"
+          value={github}
+          onChange={(e) => setGithub(e.target.value)}
+          placeholder="GitHub URL"
+          className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        
+        <input
+          type="url"
+          value={linkedin}
+          onChange={(e) => setLinkedin(e.target.value)}
+          placeholder="LinkedIn URL"
+          className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        
+        <input
+          type="url"
+          value={instagram}
+          onChange={(e) => setInstagram(e.target.value)}
+          placeholder="Instagram URL"
+          className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        
+        <input
+          type="file"
+          onChange={handleFileChange}
+          accept="image/*"
+          className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        
+        <button 
+          type="submit" 
+          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300"
+        >
+          Register
+        </button>
+        
+        {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+      </form>
+    </div>
   );
 }
 

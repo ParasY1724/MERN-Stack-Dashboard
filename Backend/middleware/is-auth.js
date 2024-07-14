@@ -16,6 +16,8 @@ module.exports = async (req, res, next) => {
       throw error;
     }
     const user = await User.findById(decodedToken.userId).select('-password');
+    await user.populate('progress.following', '_id username profilePic');
+    await user.populate('progress.followers', '_id username profilePic');
     if (!user) {
       const error = new Error('User not found.');
       error.statusCode = 404;

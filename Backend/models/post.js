@@ -10,6 +10,11 @@ const postSchema = new Schema(
     mediaURL: {
       type: String,
     },
+    mediaType: {
+      type: String,
+      enum: ['image', 'video', ''],
+      default: ''
+    },
     content: {
       type: String,
       required: true
@@ -20,13 +25,18 @@ const postSchema = new Schema(
       required: true
     },
     likes: {
-      type:Number,
-      default:0
+      type: Number,
+      default: 0
     },
-    comments:[
+    comments: [
       {
-        type:Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Comment'
+      }
+    ],
+    tags : [
+      {
+        type:String
       }
     ]
   },

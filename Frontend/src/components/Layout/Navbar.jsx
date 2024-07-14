@@ -104,7 +104,7 @@ function Navbar() {
                         <p className="text-sm font-medium text-gray-900">{user.name}</p>
                         <p className="text-sm font-medium text-gray-500">{user.email}</p>
                       </div>
-                      <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">Profile</Link>
+                      <Link to={`/profile/${user.username}`}className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">Profile</Link>
                       <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">Sign out</button>
                     </div>
                   )}

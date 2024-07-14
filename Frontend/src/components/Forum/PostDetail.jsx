@@ -22,7 +22,7 @@ function PostDetail() {
           'Authorization': `Bearer ${token}`
         }
       });
-      if (!response.ok) {
+      if (!response.ok) { 
         throw new Error('Failed to fetch post');
       }
       const res_data = await response.json();
@@ -41,9 +41,29 @@ function PostDetail() {
           'Authorization': `Bearer ${token}`
         }
       });
-    //   if (!response.ok) {
-    //     throw new Error('Failed to like post');
-    //   }
+      if (!response.ok) {
+        throw new Error('Failed to like post');
+      }
+      
+      fetchPost(); // Refetch post to update like status
+    } catch (error) {
+      console.error('Error liking post:', error);
+    }
+  };
+
+  const handleCommentLike = async (commentId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/feed/like-comment/${commentId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to like post');
+      }
+      
       fetchPost(); // Refetch post to update like status
     } catch (error) {
       console.error('Error liking post:', error);
@@ -85,9 +105,22 @@ function PostDetail() {
         </div>
         <h1 className="text-3xl font-bold mb-4">{data.post.title}</h1>
         {data.post.mediaURL && (
-          <img src={data.post.mediaURL} alt="Post" className="w-full h-64 object-cover rounded-md mb-4" />
+          (data.post.mediaType === "image" ? <img src={data.post.mediaURL} alt="Post" className="w-full h-80 object-contain rounded-md mb-4" /> :
+            <video controls="controls" controlsList="nodownload noremoteplayback" src={data.post.mediaURL}  className="w-full h-80 object-contain rounded-md mb-4"></video>
+          )
+          
         )}
         <p className="mb-4">{data.post.content}</p>
+        <div className="flex items-center space-x-2 mb-4">
+          {data.post.tags.map((tag, index) => (
+            <span 
+              key={index} 
+              className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>{new Date(data.post.createdAt).toLocaleString()}</span>
           <button 
@@ -124,9 +157,10 @@ function PostDetail() {
                 <span className="font-semibold">{comment.username}</span>
               </div>
               <p>{comment.content}</p>
+              
               <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
                 <span>{new Date(comment.createdAt).toLocaleString()}</span>
-                <button className={`flex items-center ${comment.isLikedByCurrentUser ? 'text-blue-500' : ''}`}>
+                <button  onClick={() => {handleCommentLike(comment._id)}}  className={`flex items-center ${comment.isLikedByCurrentUser ? 'text-blue-500' : ''}`}>
                   <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
                   </svg>

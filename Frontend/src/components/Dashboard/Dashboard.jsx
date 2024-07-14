@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
+import PostItem from '../Forum/PostItem';
 
 const API_URL = 'http://localhost:8080'; // Replace with your actual API URL
 
@@ -36,10 +37,11 @@ function Dashboard() {
 
   const fetchRecentPosts = async () => {
     try {
-      const response = await fetch(`${API_URL}/feed/posts/recent`);
+      const response = await fetch(`${API_URL}/feed/recent_post`);
       if (!response.ok) {
         throw new Error('Failed to fetch recent posts');
       }
+
       const data = await response.json();
       setRecentPosts(data);
     } catch (error) {
@@ -57,17 +59,15 @@ function Dashboard() {
         <section className="recent-posts bg-white shadow-md rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Recent Forum Posts</h2>
           {recentPosts.length > 0 ? (
-            <ul>
+            <div className='space-y-6'>
               {recentPosts.map(post => (
-                <li key={post._id} className="mb-2">
-                  <Link to={`/forum/post/${post._id}`} className="text-orange-500">{post.title}</Link> by {post.creator.username}
-                </li>
+                <PostItem key={post._id} post={post} />
               ))}
-            </ul>
+            </div>
           ) : (
             <p>No recent posts.</p>
           )}
-          <Link to="/forum" className="block text-orange-500 mt-4">View All Posts</Link>
+          <Link to="/posts" className="block text-orange-500 mt-4">View All Posts</Link>
         </section>
       </div>
       

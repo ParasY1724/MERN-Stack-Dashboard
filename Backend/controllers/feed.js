@@ -1,15 +1,15 @@
 const Post = require('../models/post');
 const Comment = require('../models/commet');
+const User = require('../models/user');
+const upload = require('../cloudinary');
+
 
 exports.getPost = async (req, res, next) => {
   const { postId } = req.params;
   try {
     const post = await Post.findById(postId)
       .populate('creator', '-password -likes')
-      .populate({
-        path: 'comments',
-        options: { sort: { createdAt: -1 } }
-      })
+      .populate('comments')
       .lean();
     
     if (!post) {
@@ -44,17 +44,69 @@ exports.getPost = async (req, res, next) => {
   }
 };
 
-exports.createPost = async (req, res, next) => {
-  const { title , content, mediaURL } = req.body;
-  try {
-    const post = new Post({ title,content, mediaURL, creator: req.user._id });
-    const result = await post.save();
-    res.status(201).json({ message: 'Post created!', post: result });
-  } catch (err) {
-    console.log(err);
+exports.getPosts = async (req,res,next) => {
+  const {username} = req.params;
+  console.log(username);
+  let posts;
+  try{
+    if (username){
+      const user = await User.findOne({username : username});
+      posts = await Post.find({ 'creator': user._id }).populate('creator', '-password').sort({createdAt : -1});
+    }
+    else{
+      posts = await Post.find().populate('creator', '-password').sort({createdAt : -1});
+    }
+    console.log(posts);
+    res.status(200).json({posts : posts});
+  }
+  catch (err){
     next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
-};
+}
+
+exports.createPost = [
+  upload.single('media'), // 'media' should match the field name in your form data
+  async (req, res, next) => {
+    console.log("Body" ,req.body);
+    const { title, content, tags } = req.body;
+    let mediaURL = '';
+    let mediaType = '';
+
+    if (req.file) {
+      mediaURL = req.file.path;
+      
+      if (req.file.mimetype.startsWith('image/')) {
+        mediaType = 'image';
+      } else if (req.file.mimetype.startsWith('video/')) {
+        mediaType = 'video';
+      }
+    }
+    
+    try {
+      const post = new Post({ 
+        title, 
+        content, 
+        mediaURL, 
+        mediaType, 
+        creator: req.user._id,
+        tags: JSON.parse(tags) // Assuming tags are sent as a JSON string
+      });
+      
+      const result = await post.save();
+
+      // Update user's progress
+      req.user.progress.exp += 25;
+      req.user.progress.level = LevelArray[parseInt(req.user.progress.exp / 100)];
+      await req.user.save();
+
+      res.status(201).json({ message: 'Post created!', post: result });
+    } catch (err) {
+      console.log(err);
+      next(err.statusCode ? err : { ...err, statusCode: 500 });
+    }
+  }
+];
+
 
 exports.getUserPosts = async (req, res, next) => {
   const { userId } = req.params;
@@ -99,11 +151,16 @@ exports.toggleLike = async (req, res, next) => {
     const updateOp = isLiked ? '$pull' : '$push';
     const likesDelta = isLiked ? -1 : 1;
     
-    await Promise.all([
+    const [userUpdate, postUpdate] = await Promise.all([
       User.updateOne({ _id: req.user._id }, { [updateOp]: { likes: postId } }),
-      Post.updateOne({ _id: postId }, { $inc: { likes: likesDelta } })
+      Post.findByIdAndUpdate(postId, { $inc: { likes: likesDelta } }, { new: true })
     ]);
-    res.status(200).json({ message: isLiked ? 'Post Unliked!' : 'Post Liked!', likes: post.likes + likesDelta });
+
+    res.status(200).json({ 
+      message: isLiked ? 'Post Unliked!' : 'Post Liked!', 
+      likes: postUpdate.likes,
+      isLiked: !isLiked
+    });
   } catch (err) {
     next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
@@ -158,7 +215,7 @@ exports.recentPost = async (req, res) => {
       .limit(5)
       .populate({
         path: 'creator',
-        select: 'username'
+        select: 'username profilePic'
       });
     res.json(recentPosts);
   } 
