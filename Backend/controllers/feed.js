@@ -46,7 +46,6 @@ exports.getPost = async (req, res, next) => {
 
 exports.getPosts = async (req,res,next) => {
   const {username} = req.params;
-  console.log(username);
   let posts;
   try{
     if (username){
@@ -56,7 +55,6 @@ exports.getPosts = async (req,res,next) => {
     else{
       posts = await Post.find().populate('creator', '-password').sort({createdAt : -1});
     }
-    console.log(posts);
     res.status(200).json({posts : posts});
   }
   catch (err){
@@ -65,7 +63,7 @@ exports.getPosts = async (req,res,next) => {
 }
 
 exports.createPost = [
-  upload.single('media'), // 'media' should match the field name in your form data
+  upload.single('media'), 
   async (req, res, next) => {
     console.log("Body" ,req.body);
     const { title, content, tags } = req.body;
@@ -89,7 +87,7 @@ exports.createPost = [
         mediaURL, 
         mediaType, 
         creator: req.user._id,
-        tags: JSON.parse(tags) // Assuming tags are sent as a JSON string
+        tags: JSON.parse(tags)
       });
       
       const result = await post.save();
@@ -182,7 +180,11 @@ exports.commentOnPost = async (req, res, next) => {
       profilePic: req.user.profilePic,
     });
     post.comments.push(comment);
-    await Promise.all([comment.save(), post.save()]);
+    //update level
+    req.user.progress.exp += 15;
+    req.user.progress.level = LevelArray[parseInt(req.user.progress.exp / 100)];
+    
+    await Promise.all([comment.save(), post.save(),req.user.save()]);
     res.status(201).json({ message: 'Comment added!', comment });
   } catch (err) {
     next(err.statusCode ? err : { ...err, statusCode: 500 });

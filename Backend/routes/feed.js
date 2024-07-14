@@ -9,10 +9,12 @@
 const express = require('express');
 const feedController = require('../controllers/feed');
 const isAuth = require('../middleware/is-auth');
+const optionalAuth = require('../middleware/optional-auth');
+
 
 const router = express.Router();
 
-router.get('/post/:postId',isAuth, feedController.getPost); //done
+router.get('/post/:postId',optionalAuth, feedController.getPost); //done
 router.get('/posts',feedController.getPosts); //done
 router.get('/posts/:username',feedController.getPosts); //done
 router.get('/recent_post',feedController.recentPost);//done

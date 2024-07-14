@@ -1,12 +1,13 @@
 const express = require('express');
 const authController = require('../controllers/auth');
 const isAuth = require('../middleware/is-auth');
+const optionalAuth = require('../middleware/optional-auth');
 const upload = require('../cloudinary');
 const { body } = require('express-validator');
 
 const router = express.Router();
 
-router.get('/users/:username',isAuth,authController.getProfile);//done
+router.get('/users/:username',optionalAuth,authController.getProfile);//done
 router.post(
     '/signup',
     upload.single('profilePic'),
