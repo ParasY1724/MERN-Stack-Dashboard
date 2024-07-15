@@ -1,8 +1,15 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const Post = require('../models/post');
+const { validationResult } = require('express-validator');
 
 exports.signup = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { username, email, password, name, about, github, linkedin, instagram } = req.body;
 
   try {
@@ -93,6 +100,11 @@ exports.getProfile = async (req, res, next) => {
 };
 
 exports.editProfile = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { email, name, about, profilePic, socialURL } = req.body;
   try {
     const user = req.user;
@@ -104,7 +116,49 @@ exports.editProfile = async (req, res, next) => {
   }
 };
 
+exports.search = async (req, res, next) => {
+  const { query } = req.query;
+
+  if (!query) {
+    return res.status(400).json({ message: 'Search query is required' });
+  }
+
+  try {
+    // Search for users
+    const users = await User.find({
+      $or: [
+        { username: { $regex: query, $options: 'i' } },
+        { name: { $regex: query, $options: 'i' } }
+      ]
+    }).select('username name profilePic');
+
+    // Search for posts
+    const posts = await Post.find({
+      $or: [
+        { title: { $regex: query, $options: 'i' } },
+        { content: { $regex: query, $options: 'i' } },
+        { tags: { $in: [new RegExp(query, 'i')] } }
+      ]
+    }).populate('creator', 'username name profilePic');
+
+    res.status(200).json({
+      users,
+      posts
+    });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
 exports.toggleFollow = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { followId } = req.body;
   try {
     if (followId.toString() === req.user._id.toString()) {

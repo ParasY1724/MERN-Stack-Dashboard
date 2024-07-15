@@ -1,70 +1,8 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 
 const URL = 'http://localhost:8080/';
-
-const LoginContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f0f2f5;
-`;
-
-const LoginForm = styled.form`
-  background-color: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-`;
-
-const Title = styled.h2`
-  text-align: center;
-  color: #1877f2;
-  margin-bottom: 1.5rem;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  margin-bottom: 1rem;
-  border: 1px solid #dddfe2;
-  border-radius: 6px;
-  font-size: 1rem;
-
-  &:focus {
-    outline: none;
-    border-color: #1877f2;
-    box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
-  }
-`;
-
-const Button = styled.button`
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #1877f2;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #166fe5;
-  }
-`;
-
-const ErrorMessage = styled.p`
-  color: #ff3860;
-  text-align: center;
-  margin-top: 1rem;
-`;
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -90,6 +28,7 @@ function Login() {
         localStorage.setItem('token', data.token);
         setUser(data.userId);
         navigate('/');
+        location.reload();
       } else {
         throw new Error('Login failed');
       }
@@ -100,27 +39,36 @@ function Login() {
   };
 
   return (
-    <LoginContainer>
-      <LoginForm onSubmit={handleSubmit}>
-        <Title>Welcome Back</Title>
-        <Input
+    <div className="flex justify-center items-center m-5">
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+      <img 
+        className="mx-auto h-24 w-auto" src="https://cdn-icons-png.flaticon.com/512/10840/10840187.png" alt="CodeForumLogo" />
+        <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">LOGIN</h2>
+        <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
           required
+          className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <Input
+        <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
           required
+          className="w-full px-3 py-2 mb-6 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <Button type="submit">Log In</Button>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-      </LoginForm>
-    </LoginContainer>
+        <button 
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-bold hover:bg-blue-700 transition duration-300"
+        >
+          Log In
+        </button>
+        {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
+      </form>
+    </div>
   );
 }
 

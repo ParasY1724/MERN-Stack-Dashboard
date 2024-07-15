@@ -10,7 +10,7 @@ function PostItem({ post }) {
           alt={post.creator.username} 
           className="w-12 h-12 rounded-full mr-3 border-2 border-blue-500"
         />
-        <span className="font-semibold text-lg text-gray-800">@{post.creator.username}</span>
+        <Link to={`/profile/${post.creator.username}`} className="font-semibold hover:text-blue-500 text-lg text-gray-800">@{post.creator.username}</Link>
       </div>
       <Link to={`/forum/post/${post._id}`} className="block">
         <h2 className="text-2xl font-bold mb-3 hover:text-blue-600 transition duration-300">
@@ -44,7 +44,7 @@ function PostItem({ post }) {
             key={index} 
             className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs"
           >
-            {tag}
+            # {tag}
           </span>
         ))}
       </div>

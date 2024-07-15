@@ -1,6 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 import { useParams, Link } from 'react-router-dom';
+import badge1 from '../../assets/badge-1.png';
+import badge2 from '../../assets/badge-2.png';
+import badge3 from '../../assets/badge-3.png';
+import badge4 from '../../assets/badge-4.png';
+import badge5 from '../../assets/badge-5.png';
+
+const badgesArray = [badge1,badge2,badge3,badge4,badge5];
 
 const API_URL = 'http://localhost:8080'; // Replace with your actual API URL
 
@@ -184,7 +191,7 @@ function Profile() {
         <div className="md:col-span-2">
           <div className="bg-white p-4 rounded-lg shadow mb-4">
             <div className="flex items-center justify-between">
-              <img src={`/badges/level-${profile.progress.level}.svg`} alt="Badge" className="w-16 h-16" />
+              <img src={badgesArray[parseInt(profile.progress.exp/100)]} alt="Badge" className="w-16 h-16" />
               <div>
                 <p>Current League: Level {profile.progress.level}</p>
                 <p>Total Likes: {profile.likes ? profile.likes.length : 0}</p>

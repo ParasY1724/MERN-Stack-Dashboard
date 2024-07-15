@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext'; // Adjust the import path as needed
+import { Link } from 'react-router-dom';
+
 
 const API_URL = 'http://localhost:8080';
 
@@ -100,8 +102,8 @@ function PostDetail() {
     <div className="max-w-7xl mx-auto p-6 bg-gray-100">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center mb-4">
-          <img src={data.post.creator.profilePic} alt={data.post.creator.username} className="w-10 h-10 rounded-full mr-2" />
-          <span className="font-semibold">{data.post.creator.username}</span>
+          <img src={data.post.creator.profilePic} alt={data.post.creator.username} className="w-10 h-10 rounded-full mr-2 " />
+          <Link to={`/profile/${data.post.creator.username}`} className="font-semibold hover:text-blue-500  ">@{data.post.creator.username}</Link>
         </div>
         <h1 className="text-3xl font-bold mb-4">{data.post.title}</h1>
         {data.post.mediaURL && (
@@ -112,12 +114,12 @@ function PostDetail() {
         )}
         <p className="mb-4">{data.post.content}</p>
         <div className="flex items-center space-x-2 mb-4">
-          {data.post.tags.map((tag, index) => (
+          {data.post.tags && data.post.tags.map((tag, index) => (
             <span 
               key={index} 
               className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs"
             >
-              {tag}
+              # {tag}
             </span>
           ))}
         </div>
@@ -154,7 +156,7 @@ function PostDetail() {
             <div key={comment._id} className="border-b pb-2">
               <div className="flex items-center mb-2">
                 <img src={comment.profilePic} alt={comment.username} className="w-8 h-8 rounded-full mr-2" />
-                <span className="font-semibold">{comment.username}</span>
+                <Link to={`/profile/${comment.username}`} className="font-semibold hover:text-blue-500">{comment.username}</Link>
               </div>
               <p>{comment.content}</p>
               

@@ -2,6 +2,8 @@ const Post = require('../models/post');
 const Comment = require('../models/commet');
 const User = require('../models/user');
 const upload = require('../cloudinary');
+const { validationResult } = require('express-validator');
+
 
 
 exports.getPost = async (req, res, next) => {
@@ -65,7 +67,10 @@ exports.getPosts = async (req,res,next) => {
 exports.createPost = [
   upload.single('media'), 
   async (req, res, next) => {
-    console.log("Body" ,req.body);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     const { title, content, tags } = req.body;
     let mediaURL = '';
     let mediaType = '';
@@ -117,6 +122,10 @@ exports.getUserPosts = async (req, res, next) => {
 };
 
 exports.editPost = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   const { postId } = req.params;
   const { content, mediaURL } = req.body;
   try {
@@ -137,6 +146,10 @@ exports.editPost = async (req, res, next) => {
 };
 
 exports.toggleLike = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   const { postId } = req.params;
   try {
     const post = await Post.findById(postId);
@@ -165,6 +178,10 @@ exports.toggleLike = async (req, res, next) => {
 };
 
 exports.commentOnPost = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   const { postId } = req.params;
   const { content } = req.body;
   try {
@@ -192,6 +209,10 @@ exports.commentOnPost = async (req, res, next) => {
 };
 
 exports.toggleLikeComment = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   const { commentId } = req.params;
   try {
     const comment = await Comment.findById(commentId);
@@ -210,7 +231,7 @@ exports.toggleLikeComment = async (req, res, next) => {
   }
 };
 
-exports.recentPost = async (req, res) => {
+exports.recentPost = async (req, res , next) => {
   try {
     const recentPosts = await Post.find()
       .sort({ createdAt: -1 })
@@ -221,7 +242,23 @@ exports.recentPost = async (req, res) => {
       });
     res.json(recentPosts);
   } 
-  catch (error) {
-    res.status(500).json({ message: 'Error fetching recent posts', error: error.message });
+  catch (err) {
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
-}
+};
+
+exports.getLikedPosts = async (req,res,next) => {
+  const user = req.user;
+  try{
+    if (!user){
+      const error = new Error('Not Authorized.');
+      error.statusCode = 403;
+      throw error;
+    }
+    const posts = await Post.find({ _id: { $in: req.user.likes } }).populate('creator','_id username profilePic');
+    res.status(200).json({posts});
+  }
+  catch (err){
+    next(err.statusCode ? err : { ...err, statusCode: 500 });
+  }
+};

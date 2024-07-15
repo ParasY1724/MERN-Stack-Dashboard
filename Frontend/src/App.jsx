@@ -11,6 +11,8 @@ import CreatePost from './components/Forum/CreatePost';
 import PostDetail from './components/Forum/PostDetail'; // New component we'll create
 import ForumList from './components/Forum/ForumList';
 import FollowList from './components/Profile/FolllowList';
+import SearchResultsPage from './components/Layout/SearchResultsPage';
+
 
 function PrivateRoute({ children }) {
   const { user, loading } = useContext(AuthContext);
@@ -29,15 +31,17 @@ function App() {
         <Navbar />
         <div className="md:pl-72 pt-24">
           <Routes>
-            <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/profile/:username" element={<PrivateRoute><Profile /></PrivateRoute>} />
+            <Route path="/profile/:username" element={<Profile />} />
+            <Route path="/search-results" element={<SearchResultsPage />} />
             <Route path="/forum" element={<PrivateRoute><CreatePost /></PrivateRoute>} />
-            <Route path="/posts" element={<PrivateRoute><ForumList /></PrivateRoute>} />
-            <Route path="/posts/:username" element={<PrivateRoute><ForumList /></PrivateRoute>} />
-            <Route path="/forum/post/:postId" element={<PrivateRoute><PostDetail /></PrivateRoute>} />
-            {/* <Route path="/:type" element={<PrivateRoute><FollowList /></PrivateRoute>} />  */}
+            <Route path="/posts" element={<ForumList />} />
+            <Route path="/posts/:username" element={<ForumList isLikedPosts = {false}/>} />
+            <Route path="/LikedPosts" element={<ForumList isLikedPosts = {true}/>} />
+            <Route path="/forum/post/:postId" element={<PostDetail />} />
+            <Route path="/:type" element={<PrivateRoute><FollowList /></PrivateRoute>} /> 
           </Routes>
         </div>
       </Router>
