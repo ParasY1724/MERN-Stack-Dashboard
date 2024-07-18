@@ -51,8 +51,14 @@ function Register() {
         const data = await response.json();
         setUser(data.userId);
         navigate('/login');
+        location.reload();
       } else {
-        throw new Error('Registration failed');
+        if (data.errors) {
+          const errorMessages = data.errors.map(error => error.msg).join(', ');
+          setError(errorMessages);
+        } else {
+          throw new Error('Registration failed');
+        }
       }
     } catch (error) {
       console.error('Error during registration:', error);
@@ -65,7 +71,15 @@ function Register() {
   };
 
   return (
+    <>
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 w-fit text-center rounded relative mt-4" role="alert">
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
     <div className="flex justify-center items-center min-h-screen bg-gray-100 py-8">
+
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">Create Account</h2>
         
@@ -163,6 +177,7 @@ function Register() {
         {error && <p className="text-red-500 text-center mt-4">{error}</p>}
       </form>
     </div>
+    </>
   );
 }
 

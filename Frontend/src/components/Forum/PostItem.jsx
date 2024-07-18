@@ -34,10 +34,16 @@ function PostItem({ post }) {
             ></video>
           )
         )}
-        <p className="text-gray-700 mb-4 leading-relaxed">
-          {post.content.length > 150 ? `${post.content.substring(0, 150)}...` : post.content}
-        </p>
+        <div 
+          className="text-gray-700 mb-4 leading-relaxed max-h-72 overflow-hidden"
+          dangerouslySetInnerHTML={{
+            __html: post.content
+          }}
+        />
       </div>
+    
+      <Link to={`/forum/post/${post._id}`} className="text-sm italic text-blue-500 float-right">view post..</Link>
+      
       <div className="flex items-center space-x-2 mb-4">
         {post.tags.map((tag, index) => (
           <span 

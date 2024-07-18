@@ -1,5 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext,useRef } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
+import JoditEditor from 'jodit-react';
 
 const API_URL = 'http://localhost:8080';
 
@@ -10,6 +11,7 @@ function CreatePost() {
   const [mediaPreview, setMediaPreview] = useState(null);
   const [tags, setTags] = useState([]);
   const { user } = useContext(AuthContext);
+  const editor = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -103,14 +105,11 @@ function CreatePost() {
               />
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">CONTENT</label>
-              <textarea
+              <label className="block text-sm font-medium text-gray-700 mb-2">CONTENT</label>
+              <JoditEditor
+                ref={editor}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your content here..."
-                className="w-full p-2 border rounded-md"
-                rows="10"
-                required
+                onChange={newContent => setContent(newContent)}
               />
               <div className="text-right text-sm text-gray-500">{content.length}</div>
             </div>
@@ -138,7 +137,7 @@ function CreatePost() {
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className="text-sm mr-2">Try:</span>
-                {['LoveYourSkin', 'GlowGoals', 'BeautyEssentials'].map(tag => (
+                {['Coding', 'Sports', 'Gaming'].map(tag => (
                   <button type='button' key={tag} onClick={() => handleAddTag(tag)} className="bg-orange-400 text-white rounded-full px-3 py-1 text-sm">+ {tag}</button>
                 ))}
               </div>
@@ -183,8 +182,8 @@ function CreatePost() {
                 <video src={mediaPreview} controls className="w-full h-64 rounded-md mb-2" />
               )
             )}
-            <p className="text-sm">{content}</p>
-            <div className="mt-2">
+    <div className="text-sm" dangerouslySetInnerHTML={{ __html: content }}></div>
+    <div className="mt-2">
               {tags.map(tag => (
                 <span key={tag} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">#{tag}</span>
               ))}

@@ -23,8 +23,6 @@ exports.signup = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    let profilePicUrl = 'https://i.pinimg.com/736x/55/33/5c/55335c708ac05d8f469894d08e2671fa.jpg';
-
     if (req.file) {
       profilePicUrl = req.file.path;
     }
@@ -55,6 +53,7 @@ exports.signup = async (req, res, next) => {
   }
 };
 exports.login = async (req, res, next) => {
+  
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });

@@ -28,9 +28,9 @@ function Dashboard() {
  
 
   return (
-    <div className="dashboard flex flex-col md:flex-row gap-4 p-4">
+    <div className="dashboard bg-gray-50 flex flex-col md:flex-row gap-4 p-4">
       <div className="md:w-2/3">
-        <section className="recent-posts bg-white shadow-md rounded-lg p-4">
+        <section className="recent-posts rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Recent Forum Posts</h2>
           {recentPosts.length > 0 ? (
             <div className='space-y-6'>

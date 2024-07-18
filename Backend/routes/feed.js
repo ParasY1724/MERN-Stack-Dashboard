@@ -1,11 +1,3 @@
-//GET post
-//Ceate Post
-//get user post
-//Edit post 
-//Like Post
-//comment
-//like comment
-
 const express = require('express');
 const feedController = require('../controllers/feed');
 const isAuth = require('../middleware/is-auth');
@@ -18,12 +10,7 @@ router.get('/likedPosts',isAuth,feedController.getLikedPosts);
 
 router.get('/post/:postId',optionalAuth, feedController.getPost);
 
-router.post('/post', isAuth, [
-    body('title').trim().notEmpty().withMessage('Title is required'),
-    body('content').trim().notEmpty().withMessage('Content is required'),
-    body('tags').optional().isArray(),
-    body('tags.*').isString().withMessage('Tags must be strings')
-], feedController.createPost);
+router.post('/post', isAuth,feedController.createPost);
 
 router.get('/posts/',feedController.getPosts);
 router.get('/posts/:username',feedController.getPosts);

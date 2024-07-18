@@ -99,7 +99,7 @@ function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   required
                 />
-                <button type="submit" className="absolute right-2 top-2 text-orange-500 hover:text-orange-600">
+                <button type="submit" className="absolute right-2 top-2 text-blue-500 hover:text-blue-600">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                   </svg>
@@ -121,8 +121,7 @@ function Navbar() {
                   {isMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md overflow-hidden shadow-xl z-10">
                       <div className="px-4 py-2 border-b border-gray-200">
-                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                        <p className="text-sm font-medium text-gray-500">{user.email}</p>
+                        <p className="text-sm font-medium text-gray-500">@{user.username}</p>
                       </div>
                       <Link to={`/profile/${user.username}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">Profile</Link>
                       <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">Sign out</button>

@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+require('dotenv').config();
+
 
 const optionalAuth = async (req, res, next) => {
   try {
@@ -9,7 +11,7 @@ const optionalAuth = async (req, res, next) => {
       return next();
     }
     
-    const decodedToken = jwt.verify(token, 'somesupersecretsecret');
+    const decodedToken = jwt.verify(token, process.env.SECRET);
     if (!decodedToken) {
       req.user = null;
       return next();

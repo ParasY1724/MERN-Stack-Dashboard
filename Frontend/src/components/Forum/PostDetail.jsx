@@ -112,7 +112,7 @@ function PostDetail() {
           )
           
         )}
-        <p className="mb-4">{data.post.content}</p>
+        <div className="mb-4" dangerouslySetInnerHTML={{ __html: data.post.content }}></div>
         <div className="flex items-center space-x-2 mb-4">
           {data.post.tags && data.post.tags.map((tag, index) => (
             <span 

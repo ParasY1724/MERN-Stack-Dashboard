@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const progressSchema = new Schema({
   level:{
     type: String,
-    default: 'Rookie'
+    default: 'Novice'
   },
   exp: {
     type: Number,

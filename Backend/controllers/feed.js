@@ -4,7 +4,7 @@ const User = require('../models/user');
 const upload = require('../cloudinary');
 const { validationResult } = require('express-validator');
 
-
+const LevelArray = ['Novice','Apprentice','Journeyman','Expert','Master','Grandmaster'];
 
 exports.getPost = async (req, res, next) => {
   const { postId } = req.params;
@@ -67,10 +67,7 @@ exports.getPosts = async (req,res,next) => {
 exports.createPost = [
   upload.single('media'), 
   async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+    
     const { title, content, tags } = req.body;
     let mediaURL = '';
     let mediaType = '';
@@ -99,7 +96,7 @@ exports.createPost = [
 
       // Update user's progress
       req.user.progress.exp += 25;
-      req.user.progress.level = LevelArray[parseInt(req.user.progress.exp / 100)];
+      req.user.progress.level = LevelArray[Math.min(parseInt(req.user.progress.exp / 100), LevelArray.length - 1)];
       await req.user.save();
 
       res.status(201).json({ message: 'Post created!', post: result });

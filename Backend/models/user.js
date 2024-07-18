@@ -13,6 +13,10 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
+  name: {
+    type:String,
+    required : true
+  },
   username: {
     type: String,
     required: true,
@@ -24,7 +28,7 @@ const userSchema = new Schema({
   },
   profilePic : {
     type: String,
-    default: "https://i.pinimg.com/736x/55/33/5c/55335c708ac05d8f469894d08e2671fa.jpg"
+    default: "https://t3.ftcdn.net/jpg/03/91/19/22/360_F_391192211_2w5pQpFV1aozYQhcIw3FqA35vuTxJKrB.jpg"
   },
   likes:[
     {

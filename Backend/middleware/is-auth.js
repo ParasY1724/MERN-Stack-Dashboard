@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+require('dotenv').config();
 
 module.exports = async (req, res, next) => {
   try {
@@ -9,7 +10,7 @@ module.exports = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
-    const decodedToken = jwt.verify(token, 'somesupersecretsecret');
+    const decodedToken = jwt.verify(token,process.env.SECRET);
     if (!decodedToken) {
       const error = new Error('Not authenticated.');
       error.statusCode = 401;
@@ -26,7 +27,8 @@ module.exports = async (req, res, next) => {
     req.userId = decodedToken.userId;
     req.user = user;
     next();
-  } catch (err) {
+  }
+  catch (err) {
     next(err.statusCode ? err : { ...err, statusCode: 500 });
   }
 };

@@ -8,10 +8,10 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Profile from './components/Profile/Profile';
 import CreatePost from './components/Forum/CreatePost';
-import PostDetail from './components/Forum/PostDetail'; // New component we'll create
+import PostDetail from './components/Forum/PostDetail';
 import ForumList from './components/Forum/ForumList';
 import FollowList from './components/Profile/FolllowList';
-import SearchResultsPage from './components/Layout/SearchResultsPage';
+import SearchResultsPage from './components/Dashboard/SearchResultsPage';
 
 
 function PrivateRoute({ children }) {
