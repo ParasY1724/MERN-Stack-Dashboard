@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const URL = 'http://localhost:8080/';
+const URL = import.meta.env.VITE_BACKEND_URL;
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -15,7 +15,7 @@ function Login() {
     e.preventDefault();
     setError('');
     try {
-      const response = await fetch(URL+'auth/login', {
+      const response = await fetch(URL+'/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

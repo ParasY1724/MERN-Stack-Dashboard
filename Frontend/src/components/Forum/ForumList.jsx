@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import PostItem from './PostItem';
 
-const API_URL = 'http://localhost:8080';
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 
 

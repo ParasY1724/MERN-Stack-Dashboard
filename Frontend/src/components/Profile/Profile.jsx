@@ -11,7 +11,7 @@ import badge6 from '../../assets/badge-6.png';
 
 const badgesArray = [badge1,badge2,badge3,badge4,badge5,badge6];
 
-const API_URL = 'http://localhost:8080'; // Replace with your actual API URL
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 function Profile() {
   const { user: currentUser } = useContext(AuthContext);

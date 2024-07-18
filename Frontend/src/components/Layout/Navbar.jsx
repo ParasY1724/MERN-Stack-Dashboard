@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 
-const API_URL = 'http://localhost:8080'; 
+const API_URL = import.meta.env.VITE_BACKEND_URL; 
 
 function Navbar() {
   const { user, setUser } = useContext(AuthContext);
@@ -59,13 +59,13 @@ function Navbar() {
   const renderNavLinks = () => (
     <ul className="space-y-2">
       <li><Link to="/" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">🏠 Home</Link></li>
-      <li><Link to="/forum" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">📋 Create Post</Link></li>
-      <li><Link to="/posts" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">🎙️ All Post</Link></li>
-       {user &&
+      <li><Link to="/forum" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">✏️ Create Post</Link></li>
+      <li><Link to="/posts" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">📚 All Posts</Link></li>
+      {user &&
       <>
-        <li><Link to={`/posts/${user.username}`} className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">🏷️ My Posts</Link></li>
-        <li><Link to="/LikedPosts" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">❤️ Liked Posts</Link></li>
-        <li><Link to="/following" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">❤️ My Following</Link></li>
+        <li><Link to={`/posts/${user.username}`} className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">📝 My Posts</Link></li>
+        <li><Link to="/LikedPosts" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">👍 Liked Posts</Link></li>
+        <li><Link to="/following" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">👥 My Following</Link></li>
       </>
       }
     </ul>

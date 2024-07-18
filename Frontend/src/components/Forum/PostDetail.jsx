@@ -4,7 +4,7 @@ import { AuthContext } from '../../contexts/AuthContext'; // Adjust the import p
 import { Link } from 'react-router-dom';
 
 
-const API_URL = 'http://localhost:8080';
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 function PostDetail() {
   const [data, setData] = useState(null);

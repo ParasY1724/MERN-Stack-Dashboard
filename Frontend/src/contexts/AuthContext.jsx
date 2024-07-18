@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect } from 'react';
 
 export const AuthContext = createContext();
 
-const URL = 'http://localhost:8080/';
+const URL = import.meta.env.VITE_BACKEND_URL;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await fetch(URL + 'auth/get-user', {
+          const response = await fetch(URL + '/auth/get-user', {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,

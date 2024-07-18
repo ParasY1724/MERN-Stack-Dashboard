@@ -2,7 +2,7 @@ import React, { useState, useContext,useRef } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 import JoditEditor from 'jodit-react';
 
-const API_URL = 'http://localhost:8080';
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 function CreatePost() {
   const [title, setTitle] = useState('');

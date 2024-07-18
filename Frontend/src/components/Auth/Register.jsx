@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 
-const URL = 'http://localhost:8080/';
+const URL = import.meta.env.VITE_BACKEND_URL;
 
 function Register() {
   const [username, setUsername] = useState('');
@@ -42,7 +42,7 @@ function Register() {
     }
 
     try {
-      const response = await fetch(URL + 'auth/signup', {
+      const response = await fetch(URL + '/auth/signup', {
         method: 'POST',
         body: formData,
       });
