@@ -1,0 +1,23 @@
+version: '3'
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_BACKEND_URL=http://localhost:8080
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - MONGODB_URL=mongodb+srv://parasyerunkar:AeaICWhXR5teNZd7@store.axahzoz.mongodb.net/?retryWrites=true&w=majority&appName=Store
+      - CLOUDINARY_CLOUD_NAME=djr6ytdlx
+      - CLOUDINARY_API_KEY=543541516189377
+      - CLOUDINARY_API_SECRET=vu0BWX20fjhM9vq9epWK4eveQwM
+      - SECRET=somesupersecretsecret
