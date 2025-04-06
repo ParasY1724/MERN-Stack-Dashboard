@@ -88,17 +88,28 @@ function Profile() {
   };
 
   const handleShare = () => {
+    const shareUrl = window.location.href;
+  
     if (navigator.share) {
-      navigator.share({
-        title: `${profile.name}'s Profile`,
-        url: window.location.href
-      })
-      .then(() => console.log('Profile shared successfully'))
-      .catch((error) => console.error('Error sharing profile:', error));
+      navigator
+        .share({
+          title: `${profile.name}'s Profile`,
+          url: shareUrl,
+        })
+        .then(() => console.log('Profile shared successfully'))
+        .catch((error) => console.error('Error sharing profile:', error));
     } else {
-      setError('Web Share API is not supported in your browser.');
+      // Fallback: copy URL to clipboard
+      navigator.clipboard.writeText(shareUrl)
+        .then(() => {
+          alert('Link copied to clipboard!');
+        })
+        .catch(() => {
+          alert('Could not copy link to clipboard.');
+        });
     }
   };
+  
 
   if (loading) return <div className="text-center mt-8">Loading...</div>;
   if (error) return <div className="text-center mt-8 text-red-500">{error}</div>;

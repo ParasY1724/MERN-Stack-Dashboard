@@ -32,7 +32,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect(process.env.MONOGODB_URL, {
+  .connect(process.env.MONGODB_URL, {
     dbName: 'CodeForum_DB',
   })
   .then((result) => {

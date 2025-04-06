@@ -57,7 +57,7 @@ function Navbar() {
   }, []);
 
   const renderNavLinks = () => (
-    <ul className="space-y-2">
+    <ul className="space-y-2" onClick={() => {setIsSidebarOpen(false)}}>
       <li><Link to="/" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">🏠 Home</Link></li>
       <li><Link to="/forum" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">✏️ Create Post</Link></li>
       <li><Link to="/posts" className="block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded">📚 All Posts</Link></li>
@@ -171,14 +171,14 @@ function Navbar() {
                   <form onSubmit={handleSearch} className="mb-4">
                     <div className="relative">
                       <input
-                        type="search"
+                        type="text"
                         className="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-orange-500 focus:border-orange-500"
                         placeholder="Search..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         required
                       />
-                      <button type="submit" className="absolute right-2 top-2 text-orange-500 hover:text-orange-600">
+                      <button type="submit" className="absolute right-2 top-2 text-orange-500 hover:text-orange-600" onClick={() => {setIsSidebarOpen(false)}}>
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
